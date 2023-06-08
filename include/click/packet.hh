@@ -1,6 +1,7 @@
 // -*- related-file-name: "../../lib/packet.cc" -*-
 #ifndef CLICK_PACKET_HH
 #define CLICK_PACKET_HH
+#include <bits/stdint-uintn.h>
 #include <click/ipaddress.hh>
 #include <click/glue.hh>
 #include <click/timestamp.hh>
@@ -420,6 +421,11 @@ class Packet { public:
     /** @brief Set the previous packet annotation. */
     inline void set_prev(Packet *p);
 
+    #if !CLICK_LINUXMODULE
+    inline uint8_t get_p_id();
+    inline void set_p_id(uint8_t id);
+    #endif
+
     enum {
 	dst_ip_anno_offset = 0, dst_ip_anno_size = 4,
 	dst_ip6_anno_offset = 0, dst_ip6_anno_size = 16
@@ -728,6 +734,7 @@ class Packet { public:
 	char timestamp[sizeof(Timestamp)];
 	Packet *next;
 	Packet *prev;
+    uint8_t p_id;
     };
 #endif
     /** @endcond never */
@@ -1053,6 +1060,20 @@ Packet::set_prev(Packet *p)
     _aa.prev = p;
 #endif
 }
+
+#if !CLICK_LINUXMODULE
+inline uint8_t
+Packet::get_p_id()
+{
+    return _aa.p_id;
+}
+
+inline void
+Packet::set_p_id(uint8_t id)
+{
+    _aa.p_id = id;
+}
+#endif
 
 /** @brief Return true iff the packet's MAC header pointer is set.
  * @sa set_mac_header, clear_mac_header */

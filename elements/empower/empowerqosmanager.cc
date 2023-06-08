@@ -304,6 +304,7 @@ Packet * EmpowerQOSManager::pull(int) {
 			_active_list.push_front(slice);
 		}
 		_lock.release_write();
+		p->set_p_id(queue->_slice._dscp);
 		return p;
 	} else {
 		_head_table.set(slice, p);

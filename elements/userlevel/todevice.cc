@@ -17,6 +17,7 @@
  * legally binding.
  */
 
+#include <bits/stdint-uintn.h>
 #include <click/config.h>
 #if HAVE_NET_BPF_H
 # include <sys/types.h>
@@ -101,13 +102,13 @@ ToDevice::configure(Vector<String> &conf, ErrorHandler *errh)
 	return errh->error("cannot send packets on this platform");
 #endif
     }
-#if TODEVICE_ALLOW_PCAP
-    else if (method == "PCAP")
-	_method = method_pcap;
-#endif
 #if TODEVICE_ALLOW_LINUX
     else if (method == "LINUX")
 	_method = method_linux;
+#endif
+#if TODEVICE_ALLOW_PCAP
+    else if (method == "PCAP")
+	_method = method_pcap;
 #endif
 #if TODEVICE_ALLOW_DEVBPF
     else if (method == "DEVBPF")
@@ -146,6 +147,10 @@ ToDevice::initialize(ErrorHandler *errh)
 
     FromDevice *fd = find_fromdevice();
     if (fd && _method == method_default) {
+#if FROMDEVICE_ALLOW_LINUX && TODEVICE_ALLOW_LINUX
+	if (fd->linux_fd() >= 0)
+	    _method = method_linux;
+#endif
 #if FROMDEVICE_ALLOW_NETMAP && TODEVICE_ALLOW_NETMAP
 	if (fd->netmap())
 	    _method = method_netmap;
@@ -153,10 +158,6 @@ ToDevice::initialize(ErrorHandler *errh)
 #if FROMDEVICE_ALLOW_PCAP && TODEVICE_ALLOW_PCAP
 	if (fd->pcap())
 	    _method = method_pcap;
-#endif
-#if FROMDEVICE_ALLOW_LINUX && TODEVICE_ALLOW_LINUX
-	if (fd->linux_fd() >= 0)
-	    _method = method_linux;
 #endif
     }
 
@@ -317,8 +318,10 @@ ToDevice::send_packet(Packet *p)
 #endif
 
 #if TODEVICE_ALLOW_LINUX
-    if (_method == method_linux)
-	r = send(_fd, p->data(), p->length(), 0);
+    if (_method == method_linux) {
+		uint32_t id = p->get_p_id();
+		r = send(_fd, p->data(), p->length(), id << 16);
+	}
 #endif
 
 #if TODEVICE_ALLOW_DEVBPF
