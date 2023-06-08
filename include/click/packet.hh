@@ -1,7 +1,7 @@
 // -*- related-file-name: "../../lib/packet.cc" -*-
 #ifndef CLICK_PACKET_HH
 #define CLICK_PACKET_HH
-#include <bits/stdint-uintn.h>
+#include <stdint.h>
 #include <click/ipaddress.hh>
 #include <click/glue.hh>
 #include <click/timestamp.hh>

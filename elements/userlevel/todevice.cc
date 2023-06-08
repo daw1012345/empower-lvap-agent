@@ -17,7 +17,7 @@
  * legally binding.
  */
 
-#include <bits/stdint-uintn.h>
+#include <stdint.h>
 #include <click/config.h>
 #if HAVE_NET_BPF_H
 # include <sys/types.h>
