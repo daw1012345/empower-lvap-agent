@@ -45,6 +45,9 @@ EmpowerLVAPManager::~EmpowerLVAPManager() {
 }
 
 int EmpowerLVAPManager::initialize(ErrorHandler *) {
+	socket = nl_socket_alloc();
+    genl_connect(socket);
+
 	compute_bssid_mask();
 	_timer.initialize(this);
 	_timer.schedule_now();
@@ -1578,7 +1581,10 @@ int EmpowerLVAPManager::handle_lvap_stats_request(Packet *p, uint32_t offset) {
 }
 
 int EmpowerLVAPManager::handle_set_slice(Packet *p, uint32_t offset) {
-
+// int main() {
+    struct nl_msg *msg;
+    struct nl_msg *txq_props;
+	
 	empower_set_slice *add_slice = (empower_set_slice *) (p->data() + offset);
 
 	int iface_id = add_slice->iface_id();
@@ -1590,6 +1596,27 @@ int EmpowerLVAPManager::handle_set_slice(Packet *p, uint32_t offset) {
 	uint8_t scheduler = add_slice->scheduler();
 
 	_eqms[iface_id]->set_slice(ssid, dscp, quantum, amsdu_aggregation, scheduler);
+
+
+	int if_index = if_nametoindex("empower0");
+
+    int driver_id = genl_ctrl_resolve(socket, "nl80211");
+
+    msg = nlmsg_alloc();
+    txq_props = nlmsg_alloc();
+
+    genlmsg_put(msg, 0, 0, driver_id, 0, 0, NL80211_CMD_SET_WIPHY, 0);
+    nla_put_u32(msg, NL80211_ATTR_IFINDEX, if_index);
+
+    nla_put_u32(txq_props, NL80211_TXQ_ATTR_AC, dscp);
+    nla_put_u32(txq_props, NL80211_TXQ_ATTR_AIFS, add_slice->aifsn());
+    nla_put_u32(txq_props, NL80211_TXQ_ATTR_CWMIN, add_slice->cwmin());
+    nla_put_u32(txq_props, NL80211_TXQ_ATTR_CWMAX, add_slice->cwmax());
+    nla_put_u32(txq_props, NL80211_TXQ_ATTR_TXOP, add_slice->txop());
+    nla_put_nested(msg, NL80211_ATTR_WIPHY_TXQ_PARAMS, txq_props);
+    nlmsg_free(txq_props);
+    nl_send_auto_complete(socket, msg);
+	nlmsg_free(msg);
 
 	return 0;
 

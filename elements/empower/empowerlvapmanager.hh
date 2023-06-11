@@ -13,6 +13,11 @@
 #include "empowerpacket.hh"
 #include "igmppacket.hh"
 #include "empowermulticasttable.hh"
+#include <netlink/genl/genl.h>
+#include <linux/nl80211.h>
+#include <net/if.h>
+#include <netlink/genl/ctrl.h>
+#include <netlink/netlink.h>
 CLICK_DECLS
 
 /*
@@ -392,6 +397,8 @@ private:
 	class EmpowerDeAuthResponder *_edeauthr;
 	class EmpowerRXStats *_ers;
 	class EmpowerMulticastTable * _mtbl;
+
+	struct nl_sock *socket;
 
 	LVAP _lvaps;
 	VAP _vaps;
