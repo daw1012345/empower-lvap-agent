@@ -45,8 +45,10 @@ EmpowerLVAPManager::~EmpowerLVAPManager() {
 }
 
 int EmpowerLVAPManager::initialize(ErrorHandler *) {
+	#ifndef IGNORE_LIBNL
 	socket = nl_socket_alloc();
     genl_connect(socket);
+	#endif
 
 	compute_bssid_mask();
 	_timer.initialize(this);
