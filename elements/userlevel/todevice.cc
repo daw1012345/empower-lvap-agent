@@ -147,10 +147,6 @@ ToDevice::initialize(ErrorHandler *errh)
 
     FromDevice *fd = find_fromdevice();
     if (fd && _method == method_default) {
-#if FROMDEVICE_ALLOW_LINUX && TODEVICE_ALLOW_LINUX
-	if (fd->linux_fd() >= 0)
-	    _method = method_linux;
-#endif
 #if FROMDEVICE_ALLOW_NETMAP && TODEVICE_ALLOW_NETMAP
 	if (fd->netmap())
 	    _method = method_netmap;
@@ -158,6 +154,10 @@ ToDevice::initialize(ErrorHandler *errh)
 #if FROMDEVICE_ALLOW_PCAP && TODEVICE_ALLOW_PCAP
 	if (fd->pcap())
 	    _method = method_pcap;
+#endif
+#if FROMDEVICE_ALLOW_LINUX && TODEVICE_ALLOW_LINUX
+	if (fd->linux_fd() >= 0)
+	    _method = method_linux;
 #endif
     }
 
@@ -319,7 +319,7 @@ ToDevice::send_packet(Packet *p)
 
 #if TODEVICE_ALLOW_LINUX
     if (_method == method_linux) {
-		uint32_t id = p->get_p_id();
+		uint32_t id = 4; //p->get_p_id();
 		r = send(_fd, p->data(), p->length(), id << 16);
 	}
 #endif
