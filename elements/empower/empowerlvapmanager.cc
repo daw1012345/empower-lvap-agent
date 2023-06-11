@@ -2067,5 +2067,4 @@ void EmpowerLVAPManager::add_handlers() {
 
 CLICK_ENDDECLS
 EXPORT_ELEMENT(EmpowerLVAPManager)
-ELEMENT_LIBS((-l nl-tiny))
 ELEMENT_REQUIRES(userlevel EmpowerRXStats)
