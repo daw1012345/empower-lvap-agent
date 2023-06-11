@@ -878,7 +878,6 @@ Packet::copy_annotations(const Packet *p)
     set_packet_type_anno(p->packet_type_anno());
     set_device_anno(p->device_anno());
     set_timestamp_anno(p->timestamp_anno());
-    set_p_id(p->get_p_id());
 }
 
 
