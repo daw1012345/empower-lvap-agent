@@ -13,11 +13,13 @@
 #include "empowerpacket.hh"
 #include "igmppacket.hh"
 #include "empowermulticasttable.hh"
+#ifndef IGNORE_LIBNL
 #include <netlink/genl/genl.h>
 #include <linux/nl80211.h>
 #include <net/if.h>
 #include <netlink/genl/ctrl.h>
 #include <netlink/netlink.h>
+#endif
 CLICK_DECLS
 
 /*
@@ -398,7 +400,9 @@ private:
 	class EmpowerRXStats *_ers;
 	class EmpowerMulticastTable * _mtbl;
 
+	#ifndef IGNORE_LIBNL
 	struct nl_sock *socket;
+	#endif
 
 	LVAP _lvaps;
 	VAP _vaps;

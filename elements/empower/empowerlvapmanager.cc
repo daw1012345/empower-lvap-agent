@@ -1593,6 +1593,7 @@ int EmpowerLVAPManager::handle_set_slice(Packet *p, uint32_t offset) {
 
 	_eqms[iface_id]->set_slice(ssid, dscp, quantum, amsdu_aggregation, scheduler);
 
+	#ifndef IGNORE_LIBNL
 	struct nl_msg *msg;
     struct nlattr *txq, *params;
 
@@ -1643,6 +1644,7 @@ int EmpowerLVAPManager::handle_set_slice(Packet *p, uint32_t offset) {
     ret = nl_send_auto_complete(socket, msg);
 
     nlmsg_free(msg);
+	#endif
 	return 0;
 
 }
