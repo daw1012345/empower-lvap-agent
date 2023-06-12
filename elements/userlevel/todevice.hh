@@ -68,20 +68,20 @@ CLICK_DECLS
 #if defined(__linux__)
 # define TODEVICE_ALLOW_LINUX 1
 #endif
-#if HAVE_PCAP && (HAVE_PCAP_INJECT || HAVE_PCAP_SENDPACKET)
-extern "C" {
-# include <pcap.h>
-}
-# define TODEVICE_ALLOW_PCAP 1
-#endif
-#if defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__APPLE__) || defined(__NetBSD__)
-# define TODEVICE_ALLOW_DEVBPF 1
-#elif defined(__sun)
-# define TODEVICE_ALLOW_PCAPFD 1
-#endif
-#if FROMDEVICE_ALLOW_NETMAP
-# define TODEVICE_ALLOW_NETMAP 1
-#endif
+// #if HAVE_PCAP && (HAVE_PCAP_INJECT || HAVE_PCAP_SENDPACKET)
+// extern "C" {
+// # include <pcap.h>
+// }
+// # define TODEVICE_ALLOW_PCAP 1
+// #endif
+// #if defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__APPLE__) || defined(__NetBSD__)
+// # define TODEVICE_ALLOW_DEVBPF 1
+// #elif defined(__sun)
+// # define TODEVICE_ALLOW_PCAPFD 1
+// #endif
+// #if FROMDEVICE_ALLOW_NETMAP
+// # define TODEVICE_ALLOW_NETMAP 1
+// #endif
 
 class ToDevice : public Element { public:
 

@@ -7,28 +7,28 @@
 # define FROMDEVICE_ALLOW_LINUX 1
 #endif
 
-#if HAVE_PCAP
-# define FROMDEVICE_ALLOW_PCAP 1
-extern "C" {
-# include <pcap.h>
-/* Prototype pcap_setnonblock if we have it, but not the prototype. */
-# if HAVE_PCAP_SETNONBLOCK && !HAVE_DECL_PCAP_SETNONBLOCK
-int pcap_setnonblock(pcap_t *p, int nonblock, char *errbuf);
-# endif
-}
-#endif
+// #if HAVE_PCAP
+// # define FROMDEVICE_ALLOW_PCAP 1
+// extern "C" {
+// # include <pcap.h>
+// /* Prototype pcap_setnonblock if we have it, but not the prototype. */
+// # if HAVE_PCAP_SETNONBLOCK && !HAVE_DECL_PCAP_SETNONBLOCK
+// int pcap_setnonblock(pcap_t *p, int nonblock, char *errbuf);
+// # endif
+// }
+// #endif
 
-#if HAVE_NET_NETMAP_H
-# define FROMDEVICE_ALLOW_NETMAP 1
-# include "elements/userlevel/netmapinfo.hh"
-#endif
+// #if HAVE_NET_NETMAP_H
+// # define FROMDEVICE_ALLOW_NETMAP 1
+// # include "elements/userlevel/netmapinfo.hh"
+// #endif
 
-#if FROMDEVICE_ALLOW_NETMAP || FROMDEVICE_ALLOW_PCAP
-# include <click/task.hh>
-extern "C" {
-void FromDevice_get_packet(u_char*, const struct pcap_pkthdr*, const u_char*);
-}
-#endif
+// #if FROMDEVICE_ALLOW_NETMAP || FROMDEVICE_ALLOW_PCAP
+// # include <click/task.hh>
+// extern "C" {
+// void FromDevice_get_packet(u_char*, const struct pcap_pkthdr*, const u_char*);
+// }
+// #endif
 
 CLICK_DECLS
 
