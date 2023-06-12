@@ -1588,6 +1588,13 @@ int EmpowerLVAPManager::handle_set_slice(Packet *p, uint32_t offset) {
 	bool amsdu_aggregation = add_slice->flags(EMPOWER_AMSDU_AGGREGATION);
 	uint8_t scheduler = add_slice->scheduler();
 
+	uint8_t queue = (uint8_t)dscp;
+	uint16_t txop = (uint16_t)add_slice->txop();
+	uint16_t cwmin = (uint16_t)add_slice->cwmin();
+	uint16_t cwmax = (uint16_t)add_slice->cwmax();
+	uint8_t aifs = (uint8_t)add_slice->aifsn();
+	click_chatter("Setting slice cfg - q:%u,txop:%u,cwmin:%u,cwmax:%u,aifs:%u", queue, txop, cwmin, cwmax, aifs);
+
 	_eqms[iface_id]->set_slice(ssid, dscp, quantum, amsdu_aggregation, scheduler);
 
 	#ifndef IGNORE_LIBNL
@@ -1607,18 +1614,18 @@ int EmpowerLVAPManager::handle_set_slice(Packet *p, uint32_t offset) {
     txq = nla_nest_start(msg, NL80211_ATTR_WIPHY_TXQ_PARAMS);
     params = nla_nest_start(msg, 1);
 
-    nla_put_u8(msg, NL80211_TXQ_ATTR_AC, dscp);
-    nla_put_u16(msg, NL80211_TXQ_ATTR_TXOP, add_slice->txop());
-    nla_put_u16(msg, NL80211_TXQ_ATTR_CWMIN, add_slice->cwmin());
-    nla_put_u16(msg, NL80211_TXQ_ATTR_CWMAX, add_slice->cwmax());
-    nla_put_u8(msg, NL80211_TXQ_ATTR_AIFS, add_slice->aifsn());
+    nla_put_u8(msg, NL80211_TXQ_ATTR_AC, queue);
+    nla_put_u16(msg, NL80211_TXQ_ATTR_TXOP, txop);
+    nla_put_u16(msg, NL80211_TXQ_ATTR_CWMIN, cwmin);
+    nla_put_u16(msg, NL80211_TXQ_ATTR_CWMAX, cwmax);
+    nla_put_u8(msg, NL80211_TXQ_ATTR_AIFS, aifs);
 
     nla_nest_end(msg, params);
 	nla_nest_end(msg, txq);
 
     int ret = nl_send_auto_complete(socket, msg);
 	nlmsg_free(msg);
-	
+
 	#endif
 	return 0;
 
@@ -1855,7 +1862,9 @@ void EmpowerLVAPManager::compute_bssid_mask() {
 				click_chatter("%{element} :: %s :: %s",
 							  this,
 							  __func__,
-							  _masks[i].unparse_colon().c_str());
+							 
+							 
+							 ps  _masks[i].unparse_colon().c_str());
 			}
 			fprintf(debugfs_file, "%s\n", _masks[i].unparse_colon().c_str());
 			fclose(debugfs_file);
