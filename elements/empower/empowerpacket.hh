@@ -707,10 +707,10 @@ struct empower_set_slice : public empower_header {
     bool         flags(int f)    		{ return _flags & f; }
     uint32_t     quantum()       		{ return ntohl(_quantum); }
     String       ssid()          		{ return String((char *) _ssid); }
-    uint32_t    aifsn()             { return _aifsn;}
-    uint32_t    cwmin()             { return _cwmin;}
-    uint32_t    cwmax()             { return _cwmax;}
-    uint32_t    txop()              { return _txop;}
+    uint32_t    aifsn()             { return ntohl(_aifsn);}
+    uint32_t    cwmin()             { return ntohl(_cwmin);}
+    uint32_t    cwmax()             { return ntohl(_cwmax);}
+    uint32_t    txop()              { return ntohl(_txop);}
 } CLICK_SIZE_PACKED_ATTRIBUTE;
 
 struct empower_del_slice : public empower_header {
