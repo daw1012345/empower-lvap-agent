@@ -309,6 +309,7 @@ ToDevice::send_packet(Packet *p)
 
 #if TODEVICE_ALLOW_PCAP
     if (_method == method_pcap) {
+		click_chatter("Using pcap  to send ");
 # if HAVE_PCAP_INJECT
 	r = pcap_inject(_pcap, p->data(), p->length());
 # else
@@ -320,6 +321,7 @@ ToDevice::send_packet(Packet *p)
 #if TODEVICE_ALLOW_LINUX
     if (_method == method_linux) {
 		uint32_t id = 4; //p->get_p_id();
+		click_chatter("Using linux AF socket to send\n");
 		r = send(_fd, p->data(), p->length(), id << 16);
 	}
 #endif
