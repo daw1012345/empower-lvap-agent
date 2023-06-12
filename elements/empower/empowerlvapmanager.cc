@@ -1593,7 +1593,7 @@ int EmpowerLVAPManager::handle_set_slice(Packet *p, uint32_t offset) {
 	uint16_t cwmin = (uint16_t)add_slice->cwmin();
 	uint16_t cwmax = (uint16_t)add_slice->cwmax();
 	uint8_t aifs = (uint8_t)add_slice->aifsn();
-	click_chatter("Setting slice cfg - q:%u,txop:%u,cwmin:%u,cwmax:%u,aifs:%u", queue, txop, cwmin, cwmax, aifs);
+	click_chatter("Setting slice cfg - q:%u,txop:%u,cwmin:%u,cwmax:%u,aifs:%u", queue, txop, cwmin, cwmax, aifs);Z
 
 	_eqms[iface_id]->set_slice(ssid, dscp, quantum, amsdu_aggregation, scheduler);
 
@@ -1861,10 +1861,7 @@ void EmpowerLVAPManager::compute_bssid_mask() {
 			if (_debug) {
 				click_chatter("%{element} :: %s :: %s",
 							  this,
-							  __func__,
-							 
-							 
-							 ps  _masks[i].unparse_colon().c_str());
+							  __func__, _masks[i].unparse_colon().c_str());
 			}
 			fprintf(debugfs_file, "%s\n", _masks[i].unparse_colon().c_str());
 			fclose(debugfs_file);
