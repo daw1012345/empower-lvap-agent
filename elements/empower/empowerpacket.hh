@@ -731,6 +731,10 @@ struct empower_status_slice : public empower_header {
     uint8_t     _dscp;          			/* Traffic DSCP (int) */
     uint8_t    	_scheduler;     			/* The type of scheduler (int) */
     uint8_t     _flags;         			/* Flags (empower_slice_flags) */
+    uint32_t    _aifsn;
+    uint32_t    _cwmin;
+    uint32_t    _cwmax;
+    uint32_t    _txop;
     uint32_t    _quantum;       			/* Priority of the slice (int) */
     char        _ssid[WIFI_NWID_MAXSIZE+1];	/* Null terminated SSID */
   public:
@@ -738,6 +742,10 @@ struct empower_status_slice : public empower_header {
     void set_dscp(uint8_t dscp)                 				{ _dscp = dscp; }
     void set_scheduler(uint8_t scheduler)      					{ _scheduler = scheduler; }
     void set_flag(uint16_t f)                  					{ _flags = _flags | f; }
+    void set_aifs(uint32_t aifs)          				{ _aifsn = htonl(aifs); }
+    void set_cwmin(uint32_t cwmin)          				{ _cwmin = htonl(cwmin); }
+    void set_cwmax(uint32_t cwmax)          				{ _cwmax = htonl(cwmax); }
+    void set_txop(uint32_t txop)          				{ _txop = htonl(txop); }
     void set_quantum(uint32_t quantum)          				{ _quantum = htonl(quantum); }
     void set_ssid(String ssid)                  				{ memset(_ssid, 0, WIFI_NWID_MAXSIZE+1); memcpy(_ssid, ssid.data(), ssid.length()); }
 } CLICK_SIZE_PACKED_ATTRIBUTE;

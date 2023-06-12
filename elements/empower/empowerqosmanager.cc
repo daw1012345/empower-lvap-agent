@@ -318,10 +318,10 @@ Packet * EmpowerQOSManager::pull(int) {
 }
 
 void EmpowerQOSManager::set_default_slice(String ssid) {
-	set_slice(ssid, 0, 12000, false, 0);
+	set_slice(ssid, 0, 12000, false, 0, 2, 7, 15, 0);
 }
 
-void EmpowerQOSManager::set_slice(String ssid, int dscp, uint32_t quantum, bool amsdu_aggregation, uint8_t scheduler) {
+void EmpowerQOSManager::set_slice(String ssid, int dscp, uint32_t quantum, bool amsdu_aggregation, uint8_t scheduler, uint8_t aifs, uint16_t cwmin, uint16_t cwmax, uint16_t txop) {
 
 	_lock.acquire_write();
 
@@ -341,7 +341,7 @@ void EmpowerQOSManager::set_slice(String ssid, int dscp, uint32_t quantum, bool 
 		}
 
 		uint32_t tr_quantum = (quantum == 0) ? _quantum : quantum;
-		SliceQueue *queue = new SliceQueue(this, slice, _capacity, tr_quantum, amsdu_aggregation, scheduler);
+		SliceQueue *queue = new SliceQueue(this, slice, _capacity, tr_quantum, amsdu_aggregation, scheduler, aifs, cwmin, cwmax, txop);
 		_slices.set(slice, queue);
 		_head_table.set(slice, 0);
 	} else {
@@ -360,6 +360,11 @@ void EmpowerQOSManager::set_slice(String ssid, int dscp, uint32_t quantum, bool 
 		queue->_quantum = quantum;
 		queue->_amsdu_aggregation = amsdu_aggregation;
 		queue->_scheduler = scheduler;
+
+		queue->_aifs = aifs;
+		queue->_cwmin = cwmin;
+		queue->_cwmax = cwmax;
+		queue->_txop = txop;
 	}
 
 	_el->send_status_slice(_iface_id, ssid, dscp);

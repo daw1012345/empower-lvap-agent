@@ -363,6 +363,11 @@ void EmpowerLVAPManager::send_status_slice(uint32_t iface_id, String ssid, int d
     status->set_iface_id(iface_id);
     status->set_scheduler(queue->_scheduler);
 
+	status->set_aifs(queue->_aifs);
+	status->set_cwmin(queue->_cwmin);
+	status->set_cwmax(queue->_cwmax);
+	status->set_txop(queue->_txop);
+
 	if (queue->_amsdu_aggregation) {
 		status->set_flag(EMPOWER_AMSDU_AGGREGATION);
 	}
@@ -1595,7 +1600,7 @@ int EmpowerLVAPManager::handle_set_slice(Packet *p, uint32_t offset) {
 	uint8_t aifs = (uint8_t)add_slice->aifsn();
 	click_chatter("Setting slice cfg - q:%u,txop:%u,cwmin:%u,cwmax:%u,aifs:%u", queue, txop, cwmin, cwmax, aifs);
 
-	_eqms[iface_id]->set_slice(ssid, dscp, quantum, amsdu_aggregation, scheduler);
+	_eqms[iface_id]->set_slice(ssid, dscp, quantum, amsdu_aggregation, scheduler, aifs, cwmin, cwmax, txop);
 
 	#ifndef IGNORE_LIBNL
 	struct nl_msg *msg;

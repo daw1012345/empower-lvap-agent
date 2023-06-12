@@ -456,9 +456,15 @@ public:
     uint32_t _tx_bytes;
     uint8_t _scheduler;
 
-    SliceQueue(EmpowerQOSManager * eqm, Slice slice, uint32_t capacity, uint32_t quantum, bool amsdu_aggregation, uint8_t scheduler) :
+    uint8_t _aifs;
+    uint16_t _cwmin;
+    uint16_t _cwmax;
+    uint16_t _txop;
+
+
+    SliceQueue(EmpowerQOSManager * eqm, Slice slice, uint32_t capacity, uint32_t quantum, bool amsdu_aggregation, uint8_t scheduler, uint8_t aifs, uint16_t cwmin, uint16_t cwmax, uint16_t txop) :
 		_eqm(eqm), _slice(slice), _capacity(capacity), _size(0), _drops(0), _deficit(0), _quantum(quantum), _amsdu_aggregation(amsdu_aggregation),
-		_deficit_used(0), _max_queue_length(0), _tx_packets(0), _tx_bytes(0), _scheduler(scheduler) {
+		_deficit_used(0), _max_queue_length(0), _tx_packets(0), _tx_bytes(0), _scheduler(scheduler), _aifs(aifs), _cwmin(cwmin), _cwmax(cwmax), _txop(txop) {
     }
 
     ~SliceQueue() {
@@ -581,7 +587,7 @@ public:
 
     void add_handlers();
     void set_default_slice(String);
-    void set_slice(String, int, uint32_t, bool, uint8_t);
+    void set_slice(String, int, uint32_t, bool, uint8_t, uint8_t, uint16_t, uint16_t, uint16_t);
     void del_slice(String, int);
 
     Slices * slices() { return &_slices; }
