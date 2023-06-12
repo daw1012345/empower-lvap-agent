@@ -34,6 +34,8 @@
 #include "empowerrxstats.hh"
 #include "empowerqosmanager.hh"
 #include "empowerregmon.hh"
+#include <stdio.h>
+
 CLICK_DECLS
 
 EmpowerLVAPManager::EmpowerLVAPManager() :
@@ -1608,8 +1610,10 @@ int EmpowerLVAPManager::handle_set_slice(Packet *p, uint32_t offset) {
 
 	struct nl_sock *socket = nl_socket_alloc();
     genl_connect(socket);
-
-    int if_index = if_nametoindex("moni0");
+	
+	char iface[6]; //moniX (+null)
+	snprintf(iface, 6, "moni%u", iface_id);
+    int if_index = if_nametoindex(iface);
     int driver_id = genl_ctrl_resolve(socket, "nl80211");
 
     msg = nlmsg_alloc();
