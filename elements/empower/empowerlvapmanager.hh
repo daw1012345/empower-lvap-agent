@@ -400,10 +400,6 @@ private:
 	class EmpowerRXStats *_ers;
 	class EmpowerMulticastTable * _mtbl;
 
-	#ifndef IGNORE_LIBNL
-	struct nl_sock *socket;
-	#endif
-
 	LVAP _lvaps;
 	VAP _vaps;
 	Vector<EtherAddress> _masks;

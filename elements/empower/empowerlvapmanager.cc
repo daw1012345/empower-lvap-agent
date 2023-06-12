@@ -45,11 +45,6 @@ EmpowerLVAPManager::~EmpowerLVAPManager() {
 }
 
 int EmpowerLVAPManager::initialize(ErrorHandler *) {
-	#ifndef IGNORE_LIBNL
-	socket = nl_socket_alloc();
-    genl_connect(socket);
-	#endif
-
 	compute_bssid_mask();
 	_timer.initialize(this);
 	_timer.schedule_now();
@@ -1599,6 +1594,9 @@ int EmpowerLVAPManager::handle_set_slice(Packet *p, uint32_t offset) {
 	struct nl_msg *msg;
     struct nlattr *txq, *params;
 
+	struct nl_sock *socket = nl_socket_alloc();
+    genl_connect(socket);
+
     int if_index = if_nametoindex("moni0");
     int driver_id = genl_ctrl_resolve(socket, "nl80211");
 
@@ -1616,36 +1614,11 @@ int EmpowerLVAPManager::handle_set_slice(Packet *p, uint32_t offset) {
     nla_put_u8(msg, NL80211_TXQ_ATTR_AIFS, add_slice->aifsn());
 
     nla_nest_end(msg, params);
-
 	nla_nest_end(msg, txq);
 
     int ret = nl_send_auto_complete(socket, msg);
-
-    nlmsg_free(msg);
-
-	if_index = if_nametoindex("moni1");
-    driver_id = genl_ctrl_resolve(socket, "nl80211");
-
-    msg = nlmsg_alloc();
-    genlmsg_put(msg, 0, 0, driver_id, 0, 0, NL80211_CMD_SET_WIPHY, 0);
-    nla_put_u32(msg, NL80211_ATTR_IFINDEX, if_index);
-
-    txq = nla_nest_start(msg, NL80211_ATTR_WIPHY_TXQ_PARAMS);
-    params = nla_nest_start(msg, 1);
-
-    nla_put_u8(msg, NL80211_TXQ_ATTR_AC, dscp);
-    nla_put_u16(msg, NL80211_TXQ_ATTR_TXOP, add_slice->txop());
-    nla_put_u16(msg, NL80211_TXQ_ATTR_CWMIN, add_slice->cwmin());
-    nla_put_u16(msg, NL80211_TXQ_ATTR_CWMAX, add_slice->cwmax());
-    nla_put_u8(msg, NL80211_TXQ_ATTR_AIFS, add_slice->aifsn());
-
-    nla_nest_end(msg, params);
-
-	nla_nest_end(msg, txq);
-
-    ret = nl_send_auto_complete(socket, msg);
-
-    nlmsg_free(msg);
+	nlmsg_free(msg);
+	
 	#endif
 	return 0;
 
