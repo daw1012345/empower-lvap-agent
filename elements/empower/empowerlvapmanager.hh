@@ -72,6 +72,8 @@ Turn debug on/off
 =a EmpowerLVAPManager
 */
 
+// This is completely overkill
+#define PACKET_BUF_LEN 8192
 enum empower_port_flags {
     EMPOWER_STATUS_PORT_NOACK = (1<<0),
 };
@@ -381,6 +383,10 @@ public:
 	}
 
 private:
+	// Theoretically no packet should exceed this
+	// Do note: This implementation is not resistant to attacks! This is OOS
+	uint8_t buffer[PACKET_BUF_LEN];
+	uint32_t part_len;
 
 	ReadWriteLock _lock;
 

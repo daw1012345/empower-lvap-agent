@@ -40,7 +40,7 @@ CLICK_DECLS
 
 EmpowerLVAPManager::EmpowerLVAPManager() :
 		_period(2000), _timer(this), _e11k(0), _ebs(0), _eauthr(0), _eassor(0),
-		_edeauthr(0), _ers(0), _mtbl(0), _seq(0), _debug(false) {
+		_edeauthr(0), _ers(0), _mtbl(0), _seq(0), _debug(false), part_len(0) {
 }
 
 EmpowerLVAPManager::~EmpowerLVAPManager() {
@@ -1661,117 +1661,127 @@ void EmpowerLVAPManager::push(int, Packet *p) {
 	 * element.
 	 */
 
-	if (p->length() < sizeof(empower_header)) {
-		click_chatter("%{element} :: %s :: Packet too small: %d Vs. %d",
-				      this,
-				      __func__,
-				      p->length(),
-				      sizeof(empower_header));
-		p->kill();
-		return;
-	}
 
 	uint32_t offset = 0;
+	empower_header *w;
 
-	empower_header *w = (empower_header *) (p->data() + offset);
+	// We recieve either:
+	// 1. One whole packet
+	// 2. Many whole packets
+	// 3. Many whole packets and incomplete packets
 
-	if (w->version() != 0) {
-                click_chatter("%{element} :: %s :: Invalid version: expected 0, got %d",
-                                      this,
-                                      __func__,
-                                      w->version());
-                p->kill();
-                return;
+	// Prefix the packet with what we have in the buffer
+	// It shouldn't be too expensive as we probably don't get too much data from the server
+	WritablePacket *packet = p->push(this->part_len);
+	memcpy(packet->data(), &this->buffer, this->part_len);
+
+	// While we have at least a header
+	while(packet->length() >= sizeof(empower_header)) {
+		w = (empower_header *) (packet->data());
+
+		// The packet is not complete!
+		if (packet->length() < w->length()) {
+			break;
+		}
+
+		// Sanity check
+		if (w->version() != 0) {
+			click_chatter("%{element} :: %s :: Invalid version: expected 0, got %d",
+									this,
+									__func__,
+									w->version());
+			packet->kill();
+			p->kill();
+			return;
         }
 
-	//while (offset < p->length()) {
 		switch (w->type()) {
 		case EMPOWER_PT_HELLO_RESPONSE:
-			handle_hello_response(p, offset);
+			handle_hello_response(packet, offset);
 			break;
 		case EMPOWER_PT_TRIGGER_BEACON:
-			handle_trigger_beacon(p, offset);
+			handle_trigger_beacon(packet, offset);
 			break;
 		case EMPOWER_PT_ADD_LVAP:
-			handle_add_lvap(p, offset);
+			handle_add_lvap(packet, offset);
 			break;
 		case EMPOWER_PT_DEL_LVAP:
-			handle_del_lvap(p, offset);
+			handle_del_lvap(packet, offset);
 			break;
 		case EMPOWER_PT_ADD_VAP:
-			handle_add_vap(p, offset);
+			handle_add_vap(packet, offset);
 			break;
 		case EMPOWER_PT_DEL_VAP:
-			handle_del_vap(p, offset);
+			handle_del_vap(packet, offset);
 			break;
 		case EMPOWER_PT_PROBE_RESPONSE:
-			handle_probe_response(p, offset);
+			handle_probe_response(packet, offset);
 			break;
 		case EMPOWER_PT_AUTH_RESPONSE:
-			handle_auth_response(p, offset);
+			handle_auth_response(packet, offset);
 			break;
 		case EMPOWER_PT_ASSOC_RESPONSE:
-			handle_assoc_response(p, offset);
+			handle_assoc_response(packet, offset);
 			break;
 		case EMPOWER_PT_COUNTERS_REQUEST:
-			handle_counters_request(p, offset);
+			handle_counters_request(packet, offset);
 			break;
 		case EMPOWER_PT_TXP_COUNTERS_REQUEST:
-			handle_txp_counters_request(p, offset);
+			handle_txp_counters_request(packet, offset);
 			break;
 		case EMPOWER_PT_ADD_RSSI_TRIGGER:
-			handle_add_rssi_trigger(p, offset);
+			handle_add_rssi_trigger(packet, offset);
 			break;
 		case EMPOWER_PT_DEL_RSSI_TRIGGER:
-			handle_del_rssi_trigger(p, offset);
+			handle_del_rssi_trigger(packet, offset);
 			break;
 		case EMPOWER_PT_ADD_SUMMARY_TRIGGER:
-			handle_add_summary_trigger(p, offset);
+			handle_add_summary_trigger(packet, offset);
 			break;
 		case EMPOWER_PT_DEL_SUMMARY_TRIGGER:
-			handle_del_summary_trigger(p, offset);
+			handle_del_summary_trigger(packet, offset);
 			break;
 		case EMPOWER_PT_UCQM_REQUEST:
-			handle_uimg_request(p, offset);
+			handle_uimg_request(packet, offset);
 			break;
 		case EMPOWER_PT_NCQM_REQUEST:
-			handle_nimg_request(p, offset);
+			handle_nimg_request(packet, offset);
 			break;
 		case EMPOWER_PT_SET_PORT:
-			handle_set_port(p, offset);
+			handle_set_port(packet, offset);
 			break;
 		case EMPOWER_PT_DEL_PORT:
-			handle_del_port(p, offset);
+			handle_del_port(packet, offset);
 			break;
 		case EMPOWER_PT_LVAP_STATS_REQUEST:
-			handle_lvap_stats_request(p, offset);
+			handle_lvap_stats_request(packet, offset);
 			break;
 		case EMPOWER_PT_WIFI_STATS_REQUEST:
-			handle_wifi_stats_request(p, offset);
+			handle_wifi_stats_request(packet, offset);
 			break;
 		case EMPOWER_PT_CAPS_REQUEST:
-			handle_caps_request(p, offset);
+			handle_caps_request(packet, offset);
 			break;
 		case EMPOWER_PT_LVAP_STATUS_REQ:
-			handle_lvap_status_request(p, offset);
+			handle_lvap_status_request(packet, offset);
 			break;
 		case EMPOWER_PT_VAP_STATUS_REQ:
-			handle_vap_status_request(p, offset);
+			handle_vap_status_request(packet, offset);
 			break;
 		case EMPOWER_PT_SET_SLICE:
-			handle_set_slice(p, offset);
+			handle_set_slice(packet, offset);
 			break;
 		case EMPOWER_PT_DEL_SLICE:
-			handle_del_slice(p, offset);
+			handle_del_slice(packet, offset);
 			break;
 		case EMPOWER_PT_SLICE_STATS_REQUEST:
-			handle_slice_stats_request(p, offset);
+			handle_slice_stats_request(packet, offset);
 			break;
 		case EMPOWER_PT_SLICE_STATUS_REQ:
-			handle_slice_status_request(p, offset);
+			handle_slice_status_request(packet, offset);
 			break;
 		case EMPOWER_PT_PORT_STATUS_REQ:
-			handle_port_status_request(p, offset);
+			handle_port_status_request(packet, offset);
 			break;
 		default:
 			click_chatter("%{element} :: %s :: Unknown packet type: %d",
@@ -1779,10 +1789,20 @@ void EmpowerLVAPManager::push(int, Packet *p) {
 					      __func__,
 					      w->type());
 		}
-		//offset += w->length();
-	//}
 
+		packet->pull(w->length());
+	}
+
+	if (packet->length() <= PACKET_BUF_LEN) {
+		memcpy(&this->buffer, packet->data(), packet->length());
+		this->part_len = packet->length();
+	} else {
+		click_chatter("Packet too long! [%d]", packet->length());
+	}
+
+	packet->kill();
 	p->kill();
+
 	return;
 
 }
