@@ -1667,19 +1667,42 @@ void EmpowerLVAPManager::push(int, Packet *p) {
 
 	// We recieve either:
 	// 1. One whole packet
-	// 2. Many whole packets
-	// 3. Many whole packets and incomplete packets
+	// 2. One incomplete packet
+	// 3. Many whole packets
+	// 4. Many complete packets followed by an incomplete packet
+
+	// NOTE: If invalid data is recieved, this code may get desynchronized
+	// NOTE: However, we are using TCP on a local network and are not expecting to be attack - this is OOS
+
 
 	// Prefix the packet with what we have in the buffer
 	// It shouldn't be too expensive as we probably don't get too much data from the server
 	WritablePacket *packet = p->push(this->part_len);
+	// Important to note: this->part_len is and must always be controlled by us!
+	// (dst, src, len)
 	memcpy(packet->data(), &this->buffer, this->part_len);
+
+	// Now that we have used the buffer, we should empty it in case we have to bail out.
+	// (We just say that the buffer is empty, don't actually empty it. In security-sensitive information we would have to be careful to not leak data).
+	// This prevents infinite loops if we bail out due to invalid data
+	this->part_len = 0;
 
 	// While we have at least a header
 	while(packet->length() >= sizeof(empower_header)) {
 		w = (empower_header *) (packet->data());
 
-		// The packet is not complete!
+		// We physically cannot accomodate packets bigger than the buffer
+		// If they are incomplete, they cannot fit in the buffer
+		if (w->length() > PACKET_BUF_LEN) {
+			click_chatter("Packet exceeds buffer length! Discarding. [%d]", w->length());
+			// Discard everything and stop
+			packet->kill();
+			p->kill();
+			return;
+		}
+
+		// The amount of data we have does not correspond to the total length of the packet as reported in the header
+		// This means that the packet is incomplete!
 		if (packet->length() < w->length()) {
 			break;
 		}
@@ -1789,10 +1812,12 @@ void EmpowerLVAPManager::push(int, Packet *p) {
 					      __func__,
 					      w->type());
 		}
-
+		// Discard the handled packet
 		packet->pull(w->length());
 	}
 
+
+	// Prevent a buffer overflow attack - only copy if we have enough space in the buffer
 	if (packet->length() <= PACKET_BUF_LEN) {
 		memcpy(&this->buffer, packet->data(), packet->length());
 		this->part_len = packet->length();

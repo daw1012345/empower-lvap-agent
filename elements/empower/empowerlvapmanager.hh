@@ -383,8 +383,7 @@ public:
 	}
 
 private:
-	// Theoretically no packet should exceed this
-	// Do note: This implementation is not resistant to attacks! This is OOS
+	// Theoretically no packet should exceed this, however as the len is uint32, it is possible
 	uint8_t buffer[PACKET_BUF_LEN];
 	uint32_t part_len;
 
