@@ -281,6 +281,7 @@ Packet * EmpowerQOSManager::pull(int) {
 
 	_lock.acquire_write();
 
+	// Get first slice that has something to tx
 	Slice slice = _active_list[0];
 	_active_list.pop_front();
 
@@ -300,6 +301,7 @@ Packet * EmpowerQOSManager::pull(int) {
 		queue->_deficit = 0;
 	} else if (_rc->estimate_usecs_wifi_packet(p) <= queue->_deficit) {
 		uint32_t deficit = _rc->estimate_usecs_wifi_packet(p);
+		click_chatter("TX: Packet for queue %u. [deficit=%u] [deficit_used=%u] [quantum=%u]", slice->_dscp, queue->_deficit, queue->_deficit_used, queue->_quantum);
 		queue->_deficit -= deficit;
 		queue->_deficit_used += deficit;
 		queue->_tx_bytes += p->length();
@@ -332,7 +334,6 @@ void EmpowerQOSManager::set_slice(String ssid, int dscp, uint32_t quantum, bool 
 	SIter itr = _slices.find(slice);
 
 	if (itr == _slices.end()) {
-		if (_debug) {
 			click_chatter("%{element} :: %s :: Creating new slice queue for ssid %s dscp %u quantum %u A-MSDU %s scheduler %u",
 						  this,
 						  __func__,
@@ -341,14 +342,12 @@ void EmpowerQOSManager::set_slice(String ssid, int dscp, uint32_t quantum, bool 
 						  quantum,
 						  amsdu_aggregation ? "yes" : "no",
 						  scheduler);
-		}
 
 		uint32_t tr_quantum = (quantum == 0) ? _quantum : quantum;
 		SliceQueue *queue = new SliceQueue(this, slice, _capacity, tr_quantum, amsdu_aggregation, scheduler, aifs, cwmin, cwmax, txop);
 		_slices.set(slice, queue);
 		_head_table.set(slice, 0);
 	} else {
-		if (_debug) {
 			click_chatter("%{element} :: %s :: Updating slice queue for ssid %s dscp %u quantum %u A-MSDU %s scheduler %u",
 						  this,
 						  __func__,
@@ -357,7 +356,6 @@ void EmpowerQOSManager::set_slice(String ssid, int dscp, uint32_t quantum, bool 
 						  quantum,
 						  amsdu_aggregation ? "yes" : "no",
 						  scheduler);
-		}
 
 		SliceQueue* queue = itr.value();
 		queue->_quantum = quantum;
