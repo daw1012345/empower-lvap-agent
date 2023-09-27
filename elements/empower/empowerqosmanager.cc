@@ -301,7 +301,7 @@ Packet * EmpowerQOSManager::pull(int) {
 		queue->_deficit = 0;
 	} else if (_rc->estimate_usecs_wifi_packet(p) <= queue->_deficit) {
 		uint32_t deficit = _rc->estimate_usecs_wifi_packet(p);
-		click_chatter("TX: Packet for queue %u. [deficit=%u] [deficit_used=%u] [quantum=%u]", slice->_dscp, queue->_deficit, queue->_deficit_used, queue->_quantum);
+		click_chatter("TX: Packet for queue %u. [deficit=%u] [deficit_used=%u] [quantum=%u]", slice._dscp, queue->_deficit, queue->_deficit_used, queue->_quantum);
 		queue->_deficit -= deficit;
 		queue->_deficit_used += deficit;
 		queue->_tx_bytes += p->length();
