@@ -36,7 +36,10 @@
 CLICK_DECLS
 
 EmpowerQOSManager::EmpowerQOSManager() :
-		_el(0), _rc(0), _sleepiness(0), _capacity(500), _quantum(1470), _iface_id(0), _debug(false) {
+		_el(0), _rc(0), _sleepiness(0), _capacity(500), _quantum(1470), _iface_id(0), _debug(false) {\
+		#ifdef HAVE_MULTITHREAD
+		click_chatter("!!!!!!HAVE MULTITHREAD!!!!!!");
+		#endif
 }
 
 EmpowerQOSManager::~EmpowerQOSManager() {
