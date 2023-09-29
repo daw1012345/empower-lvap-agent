@@ -31,6 +31,8 @@
 #include "transmissionpolicy.hh"
 #include "minstrel.hh"
 #include "empowerlvapmanager.hh"
+#include <thread>
+#include <sstream>
 CLICK_DECLS
 
 EmpowerQOSManager::EmpowerQOSManager() :
@@ -248,7 +250,10 @@ void EmpowerQOSManager::store(String ssid, int dscp, Packet *q, EtherAddress ra,
 
 	q->set_p_id((uint8_t)slice._dscp);
 
-	click_chatter("Saving packet: [%d v. %d]", dscp, slice._dscp);
+	std::ostringstream oss;
+	oss << std::this_thread::get_id() << std::endl;
+
+	click_chatter("[T=%s] Saving packet: [%d v. %d]", oss.str().c_str(), dscp, slice._dscp);
 
 	sliceq = _slices.get(slice);
 
@@ -281,6 +286,9 @@ Packet * EmpowerQOSManager::pull(int) {
 
 	_lock.acquire_write();
 
+	std::ostringstream oss;
+	oss << std::this_thread::get_id() << std::endl;
+
 	// Get first slice that has something to tx
 	Slice slice = _active_list[0];
 	_active_list.pop_front();
@@ -301,7 +309,7 @@ Packet * EmpowerQOSManager::pull(int) {
 		queue->_deficit = 0;
 	} else if (_rc->estimate_usecs_wifi_packet(p) <= queue->_deficit) {
 		uint32_t deficit = _rc->estimate_usecs_wifi_packet(p);
-		click_chatter("TX: Packet for queue %u. [deficit=%u] [deficit_used=%u] [quantum=%u]", slice._dscp, queue->_deficit, queue->_deficit_used, queue->_quantum);
+		click_chatter("[T=%s] TX: Packet for queue %u. [deficit=%u] [deficit_used=%u] [quantum=%u] [p_id=%u]", oss.str().c_str(), slice._dscp, queue->_deficit, queue->_deficit_used, queue->_quantum, p->get_p_id());
 		queue->_deficit -= deficit;
 		queue->_deficit_used += deficit;
 		queue->_tx_bytes += p->length();
@@ -333,10 +341,12 @@ void EmpowerQOSManager::set_slice(String ssid, int dscp, uint32_t quantum, bool 
 	Slice slice = Slice(ssid, dscp);
 	SIter itr = _slices.find(slice);
 
+	std::ostringstream oss;
+	oss << std::this_thread::get_id() << std::endl;
+
 	if (itr == _slices.end()) {
-			click_chatter("%{element} :: %s :: Creating new slice queue for ssid %s dscp %u quantum %u A-MSDU %s scheduler %u",
-						  this,
-						  __func__,
+			click_chatter("[T=%s] Creating new slice queue for ssid %s dscp %u quantum %u A-MSDU %s scheduler %u",
+						  oss.str().c_str(),
 						  slice._ssid.c_str(),
 						  slice._dscp,
 						  quantum,
@@ -348,9 +358,8 @@ void EmpowerQOSManager::set_slice(String ssid, int dscp, uint32_t quantum, bool 
 		_slices.set(slice, queue);
 		_head_table.set(slice, 0);
 	} else {
-			click_chatter("%{element} :: %s :: Updating slice queue for ssid %s dscp %u quantum %u A-MSDU %s scheduler %u",
-						  this,
-						  __func__,
+			click_chatter("[T=%s]  Updating slice queue for ssid %s dscp %u quantum %u A-MSDU %s scheduler %u",
+						  oss.str().c_str(),
 						  slice._ssid.c_str(),
 						  slice._dscp,
 						  quantum,
