@@ -1601,7 +1601,7 @@ int EmpowerLVAPManager::handle_set_slice(Packet *p, uint32_t offset) {
 	uint16_t cwmax = (uint16_t)add_slice->cwmax();
 	uint8_t aifs = (uint8_t)add_slice->aifsn();
 
-	click_chatter("Setting slice cfg - q:%u,quantum:%u,txop:%u,cwmin:%u,cwmax:%u,aifs:%u", queue, quantum, txop, cwmin, cwmax, aifs);
+	click_chatter("Setting slice cfg - q:%u,iface:%u,quantum:%u,txop:%u,cwmin:%u,cwmax:%u,aifs:%u", queue, iface_id, quantum, txop, cwmin, cwmax, aifs);
 
 	_eqms[iface_id]->set_slice(ssid, dscp, quantum, amsdu_aggregation, scheduler, aifs, cwmin, cwmax, txop);
 

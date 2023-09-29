@@ -241,8 +241,6 @@ EmpowerQOSManager::push(int, Packet *p) {
 
 void EmpowerQOSManager::store(String ssid, int dscp, Packet *q, EtherAddress ra, EtherAddress ta) {
 
-	_lock.acquire_write();
-
 	Slice slice = Slice(ssid, dscp);
 	SliceQueue *sliceq = 0;
 
@@ -266,15 +264,13 @@ void EmpowerQOSManager::store(String ssid, int dscp, Packet *q, EtherAddress ra,
 			sliceq->_deficit = 0;
 			_active_list.push_back(slice);
 		}
-		// wake up queue
-		_empty_note.wake();
 		// reset sleepiness
 		_sleepiness = 0;
+		// wake up queue
+		_empty_note.wake();
 	} else {
 		q->kill();
 	}
-
-	_lock.release_write();
 
 }
 
@@ -286,11 +282,6 @@ Packet * EmpowerQOSManager::pull(int) {
 		}
 		return 0;
 	}
-
-	_lock.acquire_write();
-
-	// std::ostringstream oss;
-	// oss << std::this_thread::get_id() << std::endl;
 
 	// Get first slice that has something to tx
 	Slice slice = _active_list[0];
@@ -308,27 +299,32 @@ Packet * EmpowerQOSManager::pull(int) {
 		p = queue->dequeue();
 	}
 
+	// If queue is empty
 	if (!p) {
 		queue->_deficit = 0;
-	} else if (_rc->estimate_usecs_wifi_packet(p) <= queue->_deficit) {
-		uint32_t deficit = _rc->estimate_usecs_wifi_packet(p);
-		// click_chatter("[T=%s] TX: Packet for queue %u. [deficit=%u] [deficit_used=%u] [quantum=%u] [p_id=%u]", oss.str().c_str(), slice._dscp, queue->_deficit, queue->_deficit_used, queue->_quantum, p->get_p_id());
-		queue->_deficit -= deficit;
-		queue->_deficit_used += deficit;
+		return 0;
+	} 
+
+	uint32_t cost = _rc->estimate_usecs_wifi_packet(p);
+	// If we have enough deficit to send
+	if (cost <= queue->_deficit) {
+		
+		click_chatter("TX: Packet for queue %u. [cost=%u] [deficit=%u] [quantum=%u] [p_id=%u]", slice._dscp, cost ,queue->_deficit, queue->_quantum, p->get_p_id());
+		queue->_deficit -= cost;
+		queue->_deficit_used += cost;
 		queue->_tx_bytes += p->length();
 		queue->_tx_packets++;
+
 		if (queue->_size > 0) {
 			_active_list.push_front(slice);
 		}
-		_lock.release_write();
-		return p;
-	} else {
-		_head_table.set(slice, p);
-		_active_list.push_back(slice);
-		queue->_deficit += queue->_quantum;
-	}
 
-	_lock.release_write();
+		return p;
+	} 
+
+	_head_table.set(slice, p);
+	_active_list.push_back(slice);
+	queue->_deficit += queue->_quantum;
 
 	return 0;
 }
@@ -338,8 +334,6 @@ void EmpowerQOSManager::set_default_slice(String ssid) {
 }
 
 void EmpowerQOSManager::set_slice(String ssid, int dscp, uint32_t quantum, bool amsdu_aggregation, uint8_t scheduler, uint8_t aifs, uint16_t cwmin, uint16_t cwmax, uint16_t txop) {
-
-	_lock.acquire_write();
 
 	Slice slice = Slice(ssid, dscp);
 	SIter itr = _slices.find(slice);
@@ -381,13 +375,9 @@ void EmpowerQOSManager::set_slice(String ssid, int dscp, uint32_t quantum, bool 
 	}
 
 	_el->send_status_slice(_iface_id, ssid, dscp);
-
-	_lock.release_write();
 }
 
 void EmpowerQOSManager::del_slice(String ssid, int dscp) {
-
-	_lock.acquire_write();
 
 	if (_debug) {
 		click_chatter("%{element} :: %s :: Deleting slice queue for ssid %s dscp %u",
@@ -425,8 +415,6 @@ void EmpowerQOSManager::del_slice(String ssid, int dscp) {
 		p->kill();
 	}
 	_head_table.erase(itr2);
-
-	_lock.release_write();
 
 }
 
