@@ -309,7 +309,7 @@ Packet * EmpowerQOSManager::pull(int) {
 	// If we have enough deficit to send
 	if (cost <= queue->_deficit) {
 		
-		click_chatter("TX: Packet for queue %u. [cost=%u] [deficit=%u] [quantum=%u] [p_id=%u]", slice._dscp, cost ,queue->_deficit, queue->_quantum, p->get_p_id());
+		// click_chatter("TX: Packet for queue %u. [cost=%u] [deficit=%u] [quantum=%u] [p_id=%u]", slice._dscp, cost ,queue->_deficit, queue->_quantum, p->get_p_id());
 		queue->_deficit -= cost;
 		queue->_deficit_used += cost;
 		queue->_tx_bytes += p->length();
