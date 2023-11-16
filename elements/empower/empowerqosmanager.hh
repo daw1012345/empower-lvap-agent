@@ -477,6 +477,21 @@ public:
         _queues.clear();
     }
 
+    uint32_t get_number_of_queues() {
+        return _queues.size();
+    }
+
+    uint32_t get_total_in_queues() {
+        uint32_t total = 0;
+        AQIter itr = _queues.begin();
+        while (itr != _queues.end()) {
+            AggregationQueue *aq = itr.value();
+            total += aq->nb_pkts();
+        }
+
+        return total;
+    }
+
     bool enqueue(Packet *p, EtherAddress ra, EtherAddress ta) {
 
         EtherPair pair = EtherPair(ra, ta);
@@ -589,6 +604,7 @@ public:
     void set_default_slice(String);
     void set_slice(String, int, uint32_t, bool, uint8_t, uint8_t, uint16_t, uint16_t, uint16_t);
     void del_slice(String, int);
+    uint32_t get_capacity() {return _capacity;}
 
     Slices * slices() { return &_slices; }
 

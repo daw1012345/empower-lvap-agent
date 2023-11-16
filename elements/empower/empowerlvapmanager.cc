@@ -456,11 +456,25 @@ void EmpowerLVAPManager::send_slice_stats_response(String ssid, uint8_t dscp, ui
 		if (itr != _eqms[i]->slices()->end()) {
 			entry->set_deficit_used(itr.value()->_deficit_used);
 			entry->set_max_queue_length(itr.value()->_max_queue_length);
+			entry->set_current_empower_queue_length(itr.value()->get_total_in_queues());
+			entry->set_current_empower_queue_num(itr.value()->get_number_of_queues());
+			entry->set_current_empower_queue_max(_eqms[i]->get_capacity());
+			entry->set_quantum(itr.value()->_quantum);
+			entry->set_aifsn(itr.value()->_aifsn);
+			entry->set_cwmin(itr.value()->_cwmin);
+			entry->set_cwmax(itr.value()->_cwmax);
+			entry->set_txop(itr.value()->_txop);
 			entry->set_tx_bytes(itr.value()->_tx_bytes);
 			entry->set_tx_packets(itr.value()->_tx_packets);
 		} else {
 			entry->set_deficit_used(0);
 			entry->set_max_queue_length(0);
+			entry->set_current_empower_queue_length(0);
+			entry->set_quantum(0);
+			entry->set_aifsn(0);
+			entry->set_cwmin(0);
+			entry->set_cwmax(0);
+			entry->set_txop(0);
 			entry->set_tx_bytes(0);
 			entry->set_tx_packets(0);
 		}

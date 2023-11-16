@@ -766,12 +766,28 @@ struct empower_slice_stats_entry {
     uint32_t 	_iface_id; 						/* Interface id (int) */
     uint32_t    _deficit_used;      			/* Total deficit used by this queue */
     uint32_t    _max_queue_length;  			/* Maximum queue length reached */
+    uint32_t    _current_empower_queue_length;
+    uint32_t    _current_empower_queue_num;
+    uint32_t    _current_empower_queue_max;
+    uint32_t    _quantum;
+    uint32_t    _aifsn;
+    uint32_t    _cwmin;
+    uint32_t    _cwmax;
+    uint32_t    _txop;
     uint32_t    _tx_packets;        			/* Int */
     uint32_t    _tx_bytes;          			/* Int */
   public:
     void set_iface_id(uint32_t iface_id)            		{ _iface_id = htonl(iface_id); }
     void set_deficit_used(uint32_t deficit_used)            { _deficit_used = htonl(deficit_used); }
     void set_max_queue_length(uint32_t max_queue_length)    { _max_queue_length = htonl(max_queue_length); }
+    void set_current_empower_queue_length(uint32_t total) { _current_empower_queue_length = htonl(total); }
+		void set_current_empower_queue_num(uint32_t total) { _current_empower_queue_num = htonl(total); }
+    void set_current_empower_queue_max(uint32_t total) { _current_empower_queue_max = htonl(total); }
+		void set_quantum(uint32_t quantum) { _quantum = htonl(quantum); }
+		void set_aifsn(uint32_t aifsn) { _aifsn = htonl(aifsn); }
+		void set_cwmin(uint32_t cwmin) { _cwmax = htonl(cwmin); }
+		void set_cwmax(uint32_t cwmax) { _cwmax = htonl(cwmax); }
+		void set_txop(uint32_t txop) { _txop = htonl(txop); }
     void set_tx_packets(uint32_t tx_packets)                { _tx_packets = htonl(tx_packets); }
     void set_tx_bytes(uint32_t tx_bytes)                    { _tx_bytes = htonl(tx_bytes); }
 } CLICK_SIZE_PACKED_ATTRIBUTE;
