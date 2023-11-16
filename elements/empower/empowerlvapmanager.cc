@@ -460,7 +460,7 @@ void EmpowerLVAPManager::send_slice_stats_response(String ssid, uint8_t dscp, ui
 			entry->set_current_empower_queue_num(itr.value()->get_number_of_queues());
 			entry->set_current_empower_queue_max(_eqms[i]->get_capacity());
 			entry->set_quantum(itr.value()->_quantum);
-			entry->set_aifsn(itr.value()->_aifsn);
+			entry->set_aifsn(itr.value()->_aifs);
 			entry->set_cwmin(itr.value()->_cwmin);
 			entry->set_cwmax(itr.value()->_cwmax);
 			entry->set_txop(itr.value()->_txop);
